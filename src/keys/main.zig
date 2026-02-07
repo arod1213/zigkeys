@@ -21,6 +21,16 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
         ) callconv(.c) c.CGEventRef {
             const queue_ptr: *KeyQueue(T) = @ptrCast(@alignCast(queue));
 
+            const pid = c.getpid();
+            if (!queue_ptr.settings.is_global) {
+                const target_pid = c.CGEventGetIntegerValueField(event, c.kCGEventTargetUnixProcessID);
+                std.log.info("checking non global {d} {d}", .{ pid, target_pid });
+                if (target_pid != pid) {
+                    std.log.info("ignorign cause form another app", .{});
+                    return event;
+                }
+            }
+
             switch (type_) {
                 10, 11 => { // key presses
                     const flags = switch (c.CGEventGetFlags(event)) {
