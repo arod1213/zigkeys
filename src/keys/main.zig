@@ -35,13 +35,16 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
 
                     const is_down = type_ == 10;
 
-                    std.log.info("key {d} flag {d}", .{ keycode, flags orelse 256 });
+                    if (queue_ptr.settings.shouldLog) {
+                        std.log.info("key {d} flag {d}", .{ keycode, flags orelse 256 });
+                    }
+
                     const key_press = t.KeyPress.init(.{
                         .val = @intCast(keycode),
                         .flags = flags,
                         .down = is_down,
                     }) catch @panic("invalid key");
-                    queue_ptr.handleKey(key_press) catch @panic("fucked");
+                    queue_ptr.handleKey(key_press) catch @panic("could not handle key press");
                 },
                 else => {},
             }
