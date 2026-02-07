@@ -13,7 +13,7 @@ pub const Modifier = enum(u64) {
     control = 262401,
     option = 524576,
     command = 1048840,
-    fn_key = 8388864, 
+    fn_key = 8388864,
 };
 
 pub fn modsToNum(modifiers: []const Modifier) u64 {
@@ -44,9 +44,6 @@ pub const Key = struct {
 
     pub fn init(key: u8, flags: ?[]const Modifier, down: bool) Self {
         const flag_num = if (flags) |f| modsToNum(f) else null;
-        if (flags) |f| {
-            std.log.info("flag num is {d}\n", .{modsToNum(f)});
-        }
 
         return .{
             .val = key,
