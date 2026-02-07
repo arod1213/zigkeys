@@ -35,7 +35,7 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
 
                     const is_down = type_ == 10;
 
-                    if (queue_ptr.settings.shouldLog) {
+                    if (queue_ptr.settings.should_log) {
                         std.log.info("key {d} flag {d}", .{ keycode, flags orelse 256 });
                     }
 
@@ -55,9 +55,9 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
 }
 
 pub fn handleKeys(comptime T: type, queue: *KeyQueue(T)) void {
-    const listener = if (queue.settings.isGlobal) c.kCGSessionEventTap else c.kCGAnnotatedSessionEventTap;
+    const listener = if (queue.settings.is_global) c.kCGSessionEventTap else c.kCGAnnotatedSessionEventTap;
     const tap = c.CGEventTapCreate(
-        listener,
+        @intCast(listener),
         c.kCGHeadInsertEventTap,
         c.kCGEventTapOptionDefault,
         (1 << c.kCGEventKeyDown) | (1 << c.kCGEventKeyUp),
