@@ -1,0 +1,88 @@
+const std = @import("std");
+const c = @import("./coregraphics.zig").lib;
+const print = std.debug.print;
+const Allocator = std.mem.Allocator;
+
+pub const models = @import("./models.zig");
+const KeyPress = models.KeyPress;
+const binds = @import("./binds.zig");
+const Config = binds.Config;
+
+fn isRetrigger(a: models.KeyPress, b: ?models.KeyPress) bool {
+    if (a.key.down) {
+        if (b) |p| {
+            if (p.key.eq(a.key)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+pub fn KeyQueue(comptime T: type) type {
+    return struct {
+        alloc: Allocator,
+        settings: *const Config(T),
+
+        prev: ?models.KeyPress,
+        curr: ?models.KeyPress,
+
+        mu: std.Thread.Mutex,
+
+        const Self = @This();
+        pub fn init(alloc: Allocator, settings: *const Config(T)) Self {
+            return .{
+                .alloc = alloc,
+                .settings = settings,
+                .prev = null,
+                .curr = null,
+                .mu = std.Thread.Mutex{},
+            };
+        }
+
+        pub fn clear(self: *Self) void {
+            self.mu.lock();
+            defer self.mu.unlock();
+            self.curr = null;
+        }
+
+        pub fn handleKey(self: *Self, press: models.KeyPress) !void {
+            self.mu.lock();
+            defer self.mu.unlock();
+            if (press.key.down) {
+                if (isRetrigger(press, self.prev)) {
+                    return;
+                }
+
+                if (self.settings.cmdFromKey(press)) |cmd| {
+                    if (self.prev != null and !cmd.shouldTrigger(press, self.prev)) {
+                        return;
+                    }
+                }
+
+                self.curr = press;
+                return;
+            } else {
+                if (self.prev) |prev| {
+                    if (press.key.eq(prev.key)) {
+                        self.prev = null;
+                    }
+                }
+            }
+        }
+
+        pub fn take(self: *Self) ?models.KeyPress {
+            self.mu.lock();
+            defer self.mu.unlock();
+
+            const x = self.curr;
+            if (x != null) {
+                self.prev = x;
+            }
+
+            // self.curr = null;
+            // put this back if we want to use system key retrigger timing
+            return x;
+        }
+    };
+}
