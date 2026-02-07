@@ -55,8 +55,9 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
 }
 
 pub fn handleKeys(comptime T: type, queue: *KeyQueue(T)) void {
+    const listener = if (queue.settings.isGlobal) c.kCGSessionEventTap else c.kCGAnnotatedSessionEventTap;
     const tap = c.CGEventTapCreate(
-        c.kCGSessionEventTap,
+        listener,
         c.kCGHeadInsertEventTap,
         c.kCGEventTapOptionDefault,
         (1 << c.kCGEventKeyDown) | (1 << c.kCGEventKeyUp),

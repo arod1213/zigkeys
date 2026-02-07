@@ -11,6 +11,7 @@ pub fn Config(comptime T: type) type {
     const CommandType = KeyCommand(T);
     return struct {
         key_commands: []const CommandType,
+        isGlobal: bool = false,
         shouldLog: bool = false,
 
         const Self = @This();
