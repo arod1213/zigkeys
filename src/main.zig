@@ -45,6 +45,5 @@ pub fn main() !void {
         ),
     };
     var config = Config(Msg).init(&cmds);
-    config.is_global = false;
     try zigkeys.run(alloc, Msg, &config, handleKp);
 }

@@ -10,6 +10,46 @@ pub const Key = t.Key;
 pub const KeyPress = t.KeyPress;
 pub const Modifier = t.Modifier;
 pub const Config = b.Config;
+// int getFocusedAppPID() {
+//     CFArrayRef windowList = CGWindowListCopyWindowInfo(kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements, kCGNullWindowID);
+//     CFIndex count = CFArrayGetCount(windowList);
+//
+//     for (CFIndex i = 0; i < count; i++) {
+//         CFDictionaryRef window = (CFDictionaryRef)CFArrayGetValueAtIndex(windowList, i);
+//         CFNumberRef pidRef = (CFNumberRef)CFDictionaryGetValue(window, kCGWindowOwnerPID);
+//         int pid;
+//         if (CFNumberGetValue(pidRef, kCFNumberIntType, &pid)) {
+//             CFRelease(windowList);
+//             return pid;
+//         }
+//     }
+//
+//     CFRelease(windowList);
+//     return -1; // No valid window found
+// }
+
+// fn getFocusedAppPID() u32 {
+//     const window_list: c.CFArrayRef = c.CGWindowListCopyWindowInfo(
+//         c.kCGWindowListOptionOnScreenOnly | c.kCGWindowListExcludeDesktopElements,
+//         c.kCGNullWindowID,
+//     );
+//     defer c.CFRelease(window_list);
+//
+//     const count = c.CFArrayGetCount(window_list);
+//     for (0..@intCast(count)) |idx| {
+//         const window: c.CFDictionaryRef = @ptrCast(@alignCast(c.CFArrayGetValueAtIndex(window_list, @intCast(idx))));
+//         const pidRef: c.CFNumberRef = @ptrCast(@alignCast(c.CFDictionaryGetValue(window, c.kCGWindowOwnerPID)));
+//         var pid: c_int = undefined;
+//         const rc = c.CFNumberGetValue(pidRef, c.kCFNumberIntType, &pid);
+//         std.log.info("RC is {d}\n", .{rc});
+//
+//         if (rc != 0) {
+//             return @intCast(pid);
+//         }
+//     }
+//
+//     return 0;
+// }
 
 fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c.CGEventRef, ?*anyopaque) callconv(.c) c.CGEventRef {
     return struct {
@@ -20,16 +60,6 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
             queue: ?*anyopaque,
         ) callconv(.c) c.CGEventRef {
             const queue_ptr: *KeyQueue(T) = @ptrCast(@alignCast(queue));
-
-            const pid = c.getpid();
-            if (!queue_ptr.settings.is_global) {
-                const target_pid = c.CGEventGetIntegerValueField(event, c.kCGEventTargetUnixProcessID);
-                std.log.info("checking non global {d} {d}", .{ pid, target_pid });
-                if (target_pid != pid) {
-                    std.log.info("ignorign cause form another app", .{});
-                    return event;
-                }
-            }
 
             switch (type_) {
                 10, 11 => { // key presses
@@ -65,9 +95,8 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
 }
 
 pub fn handleKeys(comptime T: type, queue: *KeyQueue(T)) void {
-    const listener = if (queue.settings.is_global) c.kCGSessionEventTap else c.kCGAnnotatedSessionEventTap;
     const tap = c.CGEventTapCreate(
-        @intCast(listener),
+        c.kCGSessionEventTap,
         c.kCGHeadInsertEventTap,
         c.kCGEventTapOptionDefault,
         (1 << c.kCGEventKeyDown) | (1 << c.kCGEventKeyUp),
