@@ -72,6 +72,7 @@ pub fn KeyQueue(comptime T: type) type {
                 self.curr = press;
                 return true;
             } else {
+                logThis(self.settings.should_log, .info, "key up of {f}", .{press.key});
                 if (isRelease(press, self.prev)) {
                     logThis(self.settings.should_log, .info, "key was released {f}", .{press.key});
                     self.prev = null;
