@@ -66,7 +66,7 @@ pub fn KeyQueue(comptime T: type) type {
 
             if (self.settings.cmdFromKey(press)) |cmd| {
                 if (self.prev != null and !cmd.shouldTrigger(press, self.prev)) {
-                    logThis(self.settings.should_log, .info, "blocked trigger of {f}", .{ press.key, self.prev.?.key });
+                    logThis(self.settings.should_log, .info, "blocked trigger of {f} {f}", .{ press.key, self.prev.?.key });
                     return false;
                 }
                 self.curr = press;
