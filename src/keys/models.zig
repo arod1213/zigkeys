@@ -60,7 +60,7 @@ pub const Key = struct {
     }
 
     pub fn format(self: Self, w: *std.Io.Writer) !void {
-        try w.print("k: {d} f: {d}", .{ self.val, self.flags orelse 256 });
+        try w.print("key: {d} flag: {d} down: {any}", .{ self.val, self.flags orelse 256, self.down });
     }
 };
 

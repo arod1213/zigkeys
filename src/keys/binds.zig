@@ -57,6 +57,10 @@ pub fn KeyCommand(comptime T: type) type {
             };
         }
 
+        pub fn writeConfig(self: Self, w: *std.Io.Writer) !void {
+            try w.print("{s} - {f}", .{ self.use, self.key });
+        }
+
         pub fn eq(self: *const Self, other: KeyPress) bool {
             return self.key.eq(other.key);
         }
