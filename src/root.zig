@@ -10,7 +10,7 @@ pub const KeyCommand = keys.KeyCommand;
 pub const Key = keys.Key;
 pub const Modifier = keys.Modifier;
 
-pub fn run(arena: Allocator, comptime T: type, settings: *const Config(T), callback: fn (KeyCommand(T)) anyerror!void) !void {
+pub fn run(arena: Allocator, comptime T: type, settings: *const Config(T), ctx: anytype, callback: fn (@TypeOf(ctx), KeyCommand(T)) anyerror!void) !void {
     var queue = KeyQueue(T).init(arena, settings);
 
     const handle = try std.Thread.spawn(.{}, keys.handleKeys, .{ T, &queue });
@@ -19,7 +19,7 @@ pub fn run(arena: Allocator, comptime T: type, settings: *const Config(T), callb
     while (true) {
         if (queue.take()) |press| {
             if (settings.cmdFromKey(press)) |key_cmd| {
-                try callback(key_cmd);
+                try callback(ctx, key_cmd);
                 if (key_cmd.trigger_per_ms == 0 or !key_cmd.retrigger) {
                     queue.clear();
                 } else {

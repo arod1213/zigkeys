@@ -17,7 +17,7 @@ fn setupTermios(handle: posix.fd_t) !void {
 
 const Msg = union(enum) { a: u8, b, c };
 
-fn handleKp(kc: zigkeys.KeyCommand(Msg)) !void {
+fn handleKp(_: anytype, kc: zigkeys.KeyCommand(Msg)) !void {
     switch (kc.cmd) {
         .a => |x| std.log.info("received a {any} {d}\n", .{ kc.cmd, x }),
         .b => std.log.info("received b {any} \n", .{kc.cmd}),
@@ -45,5 +45,5 @@ pub fn main() !void {
         ),
     };
     var config = Config(Msg).init(&cmds);
-    try zigkeys.run(alloc, Msg, &config, handleKp);
+    try zigkeys.run(alloc, Msg, &config, null, handleKp);
 }
