@@ -52,6 +52,10 @@ pub const Key = struct {
         };
     }
 
+    pub fn equalPress(self: Self, other: Self) bool {
+        self.eq(other) and self.down == other.down;
+    }
+
     pub fn eq(self: Self, other: Self) bool {
         const a = self.flags orelse 256;
         const b = other.flags orelse 256;

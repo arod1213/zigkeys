@@ -68,7 +68,7 @@ pub fn KeyCommand(comptime T: type) type {
 
         pub fn shouldTrigger(self: *const Self, curr: KeyPress, prev: ?KeyPress) bool {
             if (prev == null) return true;
-            if (!curr.key.eq(prev.?.key)) return true;
+            if (!curr.key.equalPress(prev.?.key)) return true;
             if (!self.retrigger) return false;
             return self.trigger_per_ms <= curr.ms_diff(prev.?);
         }
