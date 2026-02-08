@@ -46,30 +46,55 @@ pub fn KeyQueue(comptime T: type) type {
             self.curr = null;
         }
 
-        pub fn handleKey(self: *Self, press: models.KeyPress) !void {
+        pub fn consume(self: *Self, press: models.KeyPress) bool {
             self.mu.lock();
             defer self.mu.unlock();
-            if (press.key.down) {
-                if (isRetrigger(press, self.prev)) {
-                    return;
-                }
 
-                if (self.settings.cmdFromKey(press)) |cmd| {
-                    if (self.prev != null and !cmd.shouldTrigger(press, self.prev)) {
-                        return;
-                    }
-                }
+            if (isRetrigger(press, self.prev)) {
+                return true;
+            }
 
+            if (self.settings.cmdFromKey(press)) |cmd| {
+                if (self.prev != null and !cmd.shouldTrigger(press, self.prev)) {
+                    return false;
+                }
                 self.curr = press;
-                return;
+                return true;
             } else {
                 if (self.prev) |prev| {
                     if (press.key.eq(prev.key)) {
                         self.prev = null;
+                        return true;
                     }
                 }
+                return false;
             }
         }
+
+        // pub fn handleKey(self: *Self, press: models.KeyPress) !void {
+        //     self.mu.lock();
+        //     defer self.mu.unlock();
+        //     if (press.key.down) {
+        //         if (isRetrigger(press, self.prev)) {
+        //             return;
+        //         }
+        //
+        //         if (self.settings.cmdFromKey(press)) |cmd| {
+        //             if (self.prev != null and !cmd.shouldTrigger(press, self.prev)) {
+        //                 return;
+        //             }
+        //         }
+        //
+        //         self.curr = press;
+        //         return;
+        //     } else {
+        //         if (self.prev) |prev| {
+        //             if (press.key.eq(prev.key)) {
+        //                 self.prev = null;
+        //             }
+        //         }
+        //     }
+        // }
 
         pub fn take(self: *Self) ?models.KeyPress {
             self.mu.lock();

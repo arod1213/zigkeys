@@ -36,7 +36,12 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
                         .flags = flags,
                         .down = is_down,
                     }) catch @panic("invalid key");
-                    queue_ptr.handleKey(key_press) catch @panic("could not handle key press");
+
+                    if (queue_ptr.consume(key_press) and queue_ptr.settings.propagate == false) {
+                        return null;
+                    } else {
+                        return event;
+                    }
                 },
                 else => {},
             }

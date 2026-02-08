@@ -35,7 +35,7 @@ pub fn main() !void {
 
     const T = KeyCommand(Msg);
     const cmds = [_]T{
-        T.init(Key.init(0, &[_]Modifier{ .command, .shift }, true), .b, false, "b"),
+        T.init(Key.init(36, &[_]Modifier{.control}, true), .b, false, "b"),
         T.init(Key.init(0, &[_]Modifier{.shift}, true), .c, false, "c"),
         T.init(
             Key.init(0, &[_]Modifier{.option}, true),
