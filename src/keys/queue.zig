@@ -3,17 +3,26 @@ const c = @import("./coregraphics.zig").lib;
 const print = std.debug.print;
 const Allocator = std.mem.Allocator;
 
+const logThis = @import("./logger.zig").logThis;
+
 pub const models = @import("./models.zig");
 const KeyPress = models.KeyPress;
 const binds = @import("./binds.zig");
 const Config = binds.Config;
 
 fn isRetrigger(a: models.KeyPress, b: ?models.KeyPress) bool {
-    if (a.key.down) {
-        if (b) |p| {
-            if (p.key.eq(a.key)) {
-                return true;
-            }
+    if (b) |press| {
+        return a.key.eq(press.key) and a.key.down == press.key.down;
+    }
+    return false;
+}
+
+fn isRelease(curr: models.KeyPress, prev: ?models.KeyPress) bool {
+    if (prev) |press| {
+        if (press.key.down) {
+            return press.key.eq(curr.key) and curr.key.down == false;
+        } else {
+            return false;
         }
     }
     return false;
@@ -51,21 +60,22 @@ pub fn KeyQueue(comptime T: type) type {
             defer self.mu.unlock();
 
             if (isRetrigger(press, self.prev)) {
+                logThis(self.settings.should_log, .info, "blocked retrigger of {f}", .{press.key});
                 return true;
             }
 
             if (self.settings.cmdFromKey(press)) |cmd| {
                 if (self.prev != null and !cmd.shouldTrigger(press, self.prev)) {
+                    logThis(self.settings.should_log, .info, "blocked trigger of {f}", .{press.key});
                     return false;
                 }
                 self.curr = press;
                 return true;
             } else {
-                if (self.prev) |prev| {
-                    if (press.key.eq(prev.key)) {
-                        self.prev = null;
-                        return true;
-                    }
+                if (isRelease(press, self.prev)) {
+                    logThis(self.settings.should_log, .info, "key was released {f}", .{press.key});
+                    self.prev = null;
+                    return true;
                 }
                 return false;
             }

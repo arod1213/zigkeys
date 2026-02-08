@@ -3,6 +3,8 @@ const c = @import("./coregraphics.zig").lib;
 const KeyQueue = @import("./queue.zig").KeyQueue;
 const KeyPress = @import("./models.zig").KeyPress;
 
+const logThis = @import("./logger.zig").logThis;
+
 fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c.CGEventRef, ?*anyopaque) callconv(.c) c.CGEventRef {
     return struct {
         fn eventCallback(
@@ -27,9 +29,8 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
 
                     const is_down = type_ == 10;
 
-                    if (queue_ptr.settings.should_log) {
-                        std.log.info("key {d} flag {d}", .{ keycode, flags orelse 256 });
-                    }
+                    const should_log = queue_ptr.settings.should_log;
+                    logThis(should_log, .info, "key {d} flag {d}", .{ keycode, flags orelse 256 });
 
                     const key_press = KeyPress.init(.{
                         .val = @intCast(keycode),
@@ -40,6 +41,7 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
                     if (queue_ptr.consume(key_press) and queue_ptr.settings.propagate == false) {
                         return null;
                     } else {
+                        logThis(should_log, .info, "ignored {f}", .{key_press.key});
                         return event;
                     }
                 },
