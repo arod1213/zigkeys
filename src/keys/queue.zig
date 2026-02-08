@@ -60,7 +60,7 @@ pub fn KeyQueue(comptime T: type) type {
             defer self.mu.unlock();
 
             if (isRetrigger(press, self.prev)) {
-                logThis(self.settings.should_log, .info, "blocked retrigger of {f}", .{press.key});
+                logThis(self.settings.should_log, .info, "blocked retrigger of {f} because prev is {f}", .{ press.key, self.prev.?.key });
                 return true;
             }
 
