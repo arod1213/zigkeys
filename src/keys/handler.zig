@@ -30,7 +30,7 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
                     const is_down = type_ == 10;
 
                     const should_log = queue_ptr.settings.should_log;
-                    logThis(should_log, .info, "key {d} flag {d}", .{ keycode, flags orelse 256 });
+                    logThis(should_log, .info, "key {d} flag {d} is_down {any}", .{ keycode, flags orelse 256, is_down });
 
                     const key_press = KeyPress.init(.{
                         .val = @intCast(keycode),
