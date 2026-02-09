@@ -16,7 +16,10 @@ pub const Modifier = enum(u64) {
     fn_key = 8388864,
 };
 
-pub fn modsToNum(modifiers: []const Modifier) u64 {
+pub fn modsToNum(modifiers: []const Modifier) ?u64 {
+    if (modifiers.len == 0) {
+        return null;
+    }
     var flags: u64 = 0;
     for (modifiers) |m| {
         flags |= @intFromEnum(m);
@@ -42,8 +45,8 @@ pub const Key = struct {
     //     };
     // }
 
-    pub fn init(key: u8, flags: ?[]const Modifier, down: bool) Self {
-        const flag_num = if (flags) |f| modsToNum(f) else null;
+    pub fn init(key: u8, flags: []const Modifier, down: bool) Self {
+        const flag_num = modsToNum(flags);
 
         return .{
             .val = key,
