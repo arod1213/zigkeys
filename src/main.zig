@@ -35,7 +35,7 @@ pub fn main() !void {
 
     const T = KeyCommand(Msg);
     const cmds = [_]T{
-        T.init(Key.init(0, &[_]Modifier{.control}, true), .b, true, "b"),
+        T.init(Key.init(0, &[_]Modifier{ .control, .option }, true), .b, true, "b"),
         // T.init(Key.init(0, &[_]Modifier{.shift}, true), .c, false, "c"),
         // T.init(
         //     Key.init(0, &[_]Modifier{.option}, true),
@@ -45,5 +45,6 @@ pub fn main() !void {
         // ),
     };
     var config = Config(Msg).init(&cmds);
+    config.should_log = true;
     try zigkeys.run(alloc, Msg, &config, null, handleKp);
 }

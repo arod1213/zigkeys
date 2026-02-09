@@ -9,6 +9,7 @@ pub const Modifier = enum(u64) {
     // command = c.kCGEventFlagMaskCommand,
     // fn_key = c.kCGEventFlagMaskSecondaryFn,
     // the above values were not accurate on my machine
+    // TODO: add right control, right command, right shift, etc
     shift = 131330,
     control = 262401,
     option = 524576,
