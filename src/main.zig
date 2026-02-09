@@ -35,14 +35,14 @@ pub fn main() !void {
 
     const T = KeyCommand(Msg);
     const cmds = [_]T{
-        T.init(Key.init(36, &[_]Modifier{.control}, true), .b, false, "b"),
-        T.init(Key.init(0, &[_]Modifier{.shift}, true), .c, false, "c"),
-        T.init(
-            Key.init(0, &[_]Modifier{.option}, true),
-            Msg{ .a = 5 },
-            false,
-            "c",
-        ),
+        T.init(Key.init(0, &[_]Modifier{.control}, true), .b, true, "b"),
+        // T.init(Key.init(0, &[_]Modifier{.shift}, true), .c, false, "c"),
+        // T.init(
+        //     Key.init(0, &[_]Modifier{.option}, true),
+        //     Msg{ .a = 5 },
+        //     false,
+        //     "c",
+        // ),
     };
     var config = Config(Msg).init(&cmds);
     try zigkeys.run(alloc, Msg, &config, null, handleKp);

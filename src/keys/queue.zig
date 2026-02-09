@@ -76,36 +76,12 @@ pub fn KeyQueue(comptime T: type) type {
                 if (isRelease(press, self.prev)) {
                     logThis(self.settings.should_log, .info, "key was released {f}", .{press.key});
                     self.prev = null;
+                    self.curr = null;
                     return true;
                 }
                 return false;
             }
         }
-
-        // pub fn handleKey(self: *Self, press: models.KeyPress) !void {
-        //     self.mu.lock();
-        //     defer self.mu.unlock();
-        //     if (press.key.down) {
-        //         if (isRetrigger(press, self.prev)) {
-        //             return;
-        //         }
-        //
-        //         if (self.settings.cmdFromKey(press)) |cmd| {
-        //             if (self.prev != null and !cmd.shouldTrigger(press, self.prev)) {
-        //                 return;
-        //             }
-        //         }
-        //
-        //         self.curr = press;
-        //         return;
-        //     } else {
-        //         if (self.prev) |prev| {
-        //             if (press.key.eq(prev.key)) {
-        //                 self.prev = null;
-        //             }
-        //         }
-        //     }
-        // }
 
         pub fn take(self: *Self) ?models.KeyPress {
             self.mu.lock();
@@ -116,8 +92,6 @@ pub fn KeyQueue(comptime T: type) type {
                 self.prev = x;
             }
 
-            // self.curr = null;
-            // put this back if we want to use system key retrigger timing
             return x;
         }
     };

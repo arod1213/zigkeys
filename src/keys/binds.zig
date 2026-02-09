@@ -63,7 +63,7 @@ pub fn KeyCommand(comptime T: type) type {
         }
 
         pub fn eq(self: *const Self, other: KeyPress) bool {
-            return self.key.eq(other.key);
+            return self.key.equalPress(other.key);
         }
 
         pub fn shouldTrigger(self: *const Self, curr: KeyPress, prev: ?KeyPress) bool {
