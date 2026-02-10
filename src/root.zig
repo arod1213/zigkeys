@@ -9,6 +9,7 @@ pub const Config = keys.Config;
 pub const KeyCommand = keys.KeyCommand;
 pub const Key = keys.Key;
 pub const Modifier = keys.Modifier;
+pub const Side = keys.Side;
 
 pub fn run(arena: Allocator, comptime T: type, settings: *const Config(T), ctx: anytype, callback: fn (@TypeOf(ctx), KeyCommand(T)) anyerror!void) !void {
     var queue = KeyQueue(T).init(arena, settings);

@@ -12,5 +12,6 @@ pub const KeyPress = t.KeyPress;
 pub const KeyQueue = q.KeyQueue;
 pub const KeyCommand = b.KeyCommand;
 pub const Modifier = t.Modifier;
+pub const Side = t.Side;
 pub const handleKeys = @import("./handler.zig").handleKeys;
 pub const readKey = config.readKeyFromInput;
