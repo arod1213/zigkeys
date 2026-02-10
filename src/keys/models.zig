@@ -11,12 +11,14 @@ pub const Side = enum {
 };
 
 pub fn flagsEquivalent(flag: u64, mods: []const Modifier) bool {
+    var remaining = flag;
     for (mods) |m| {
         const values = m.possibleValues();
         var contained = false;
         for (values) |val| {
             if ((flag & val) == val) {
                 contained = true;
+                remaining &= ~val;
                 break;
             }
         }
@@ -24,7 +26,14 @@ pub fn flagsEquivalent(flag: u64, mods: []const Modifier) bool {
             return false;
         }
     }
-    return true;
+    const ALL_MODIFIER_BITS: u64 =
+        131334 | // shift both
+        270953 | // control both
+        524608 | // option right
+        1048856 | // command both
+        8388864; // fn_key
+
+    return (remaining & ALL_MODIFIER_BITS) == 0;
 }
 
 pub const Modifier = union(enum) {
@@ -58,19 +67,19 @@ pub const Modifier = union(enum) {
                 .left => &[_]u64{262401},
                 .right => &[_]u64{270592},
                 .both => &[_]u64{270953},
-                .either => &[_]u64{262401, 270592},
+                .either => &[_]u64{ 262401, 270592 },
             },
             .option => |x| switch (x) {
                 .left => &[_]u64{524576},
                 .right => &[_]u64{524608},
                 .both => unreachable, // NOT VALID COMMAND
-                .either => &[_]u64{524576, 524608},
+                .either => &[_]u64{ 524576, 524608 },
             },
             .command => |x| switch (x) {
                 .left => &[_]u64{1048840},
                 .right => &[_]u64{1048848},
                 .both => &[_]u64{1048856},
-                .either => &[_]u64{1048840, 1048848},
+                .either => &[_]u64{ 1048840, 1048848 },
             },
             .fn_key => &[_]u64{8388864},
         };

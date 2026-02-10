@@ -45,6 +45,6 @@ pub fn main() !void {
         // ),
     };
     var config = Config(Msg).init(&cmds);
-    config.should_log = true;
+    // config.should_log = true;
     try zigkeys.run(alloc, Msg, &config, null, handleKp);
 }
