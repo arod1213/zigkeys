@@ -10,6 +10,17 @@ pub const Side = enum {
     either,
 };
 
+fn isEmpty(flag: u64) bool {
+    const ALL_MODIFIER_BITS: u64 =
+        131334 | // shift both
+        270953 | // control both
+        524608 | // option right
+        1048856 | // command both
+        8388864; // fn_key
+
+    return (flag & ALL_MODIFIER_BITS) == 0;
+}
+
 pub fn flagsEquivalent(flag: u64, mods: []const Modifier) bool {
     var remaining = flag;
     for (mods) |m| {
@@ -26,14 +37,7 @@ pub fn flagsEquivalent(flag: u64, mods: []const Modifier) bool {
             return false;
         }
     }
-    const ALL_MODIFIER_BITS: u64 =
-        131334 | // shift both
-        270953 | // control both
-        524608 | // option right
-        1048856 | // command both
-        8388864; // fn_key
-
-    return (remaining & ALL_MODIFIER_BITS) == 0;
+    return isEmpty(remaining);
 }
 
 pub const Modifier = union(enum) {
