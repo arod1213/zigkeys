@@ -31,33 +31,35 @@ fn isRelease(curr: models.KeyPress, prev: ?models.KeyPress) bool {
 pub fn KeyQueue(comptime T: type) type {
     return struct {
         alloc: Allocator,
+        io: std.Io,
         settings: *const Config(T),
 
         prev: ?models.KeyPress,
         curr: ?models.KeyPress,
 
-        mu: std.Thread.Mutex,
+        mu: std.Io.Mutex,
 
         const Self = @This();
-        pub fn init(alloc: Allocator, settings: *const Config(T)) Self {
+        pub fn init(alloc: Allocator, io: std.Io, settings: *const Config(T)) Self {
             return .{
                 .alloc = alloc,
+                .io = io,
                 .settings = settings,
                 .prev = null,
                 .curr = null,
-                .mu = std.Thread.Mutex{},
+                .mu = std.Io.Mutex.init,
             };
         }
 
         pub fn clear(self: *Self) void {
-            self.mu.lock();
-            defer self.mu.unlock();
+            self.mu.lock(self.io) catch return;
+            defer self.mu.unlock(self.io);
             self.curr = null;
         }
 
         pub fn consume(self: *Self, press: models.KeyPress) bool {
-            self.mu.lock();
-            defer self.mu.unlock();
+            self.mu.lock(self.io) catch return false;
+            defer self.mu.unlock(self.io);
 
             if (isRetrigger(press, self.prev)) {
                 logThis(self.settings.should_log, .info, "blocked retrigger of {f} because prev is {f}", .{ press.key, self.prev.?.key });
@@ -80,8 +82,8 @@ pub fn KeyQueue(comptime T: type) type {
         }
 
         pub fn take(self: *Self) ?models.KeyPress {
-            self.mu.lock();
-            defer self.mu.unlock();
+            self.mu.lock(self.io) catch return null;
+            defer self.mu.unlock(self.io);
 
             const x = self.curr;
             if (x != null) {

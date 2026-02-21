@@ -26,12 +26,16 @@ fn handleKp(_: anytype, kc: zigkeys.KeyCommand(Msg)) !void {
 }
 
 pub fn main() !void {
-    const stdin = std.fs.File.stdin();
+    const stdin = std.Io.File.stdin();
     try setupTermios(stdin.handle);
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const alloc = arena.allocator();
+
+    var threaded = std.Io.Threaded.init(alloc, .{});
+    defer threaded.deinit();
+    const io = threaded.io();
 
     const T = KeyCommand(Msg);
     const cmds = [_]T{
@@ -46,5 +50,5 @@ pub fn main() !void {
     };
     var config = Config(Msg).init(&cmds);
     // config.should_log = true;
-    try zigkeys.run(alloc, Msg, &config, null, handleKp);
+    try zigkeys.run(alloc, io, Msg, &config, null, handleKp);
 }

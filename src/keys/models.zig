@@ -145,13 +145,14 @@ pub const Key = struct {
 
 pub const KeyPress = struct {
     key: Key,
-    triggered_at: std.time.Instant,
+    triggered_at: std.Io.Timestamp,
 
     const Self = @This();
-    pub fn init(key: Key) !Self {
+    pub fn init(key: Key, io: std.Io) !Self {
+        const clock = std.Io.Clock.real;
         return .{
             .key = key,
-            .triggered_at = try std.time.Instant.now(),
+            .triggered_at = try std.Io.Clock.now(clock, io),
         };
     }
 

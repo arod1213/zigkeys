@@ -32,11 +32,14 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
                     const should_log = queue_ptr.settings.should_log;
                     logThis(should_log, .info, "key {d} flag {d} is_down {any}", .{ keycode, flags orelse 256, is_down });
 
-                    const key_press = KeyPress.init(.{
-                        .val = @intCast(keycode),
-                        .flags = flags,
-                        .down = is_down,
-                    }) catch @panic("invalid key");
+                    const key_press = KeyPress.init(
+                        .{
+                            .val = @intCast(keycode),
+                            .flags = flags,
+                            .down = is_down,
+                        },
+                        queue_ptr.io,
+                    ) catch @panic("invalid key");
 
                     if (queue_ptr.consume(key_press) and queue_ptr.settings.propagate == false) {
                         return null;

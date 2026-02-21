@@ -11,8 +11,8 @@ pub const Key = keys.Key;
 pub const Modifier = keys.Modifier;
 pub const Side = keys.Side;
 
-pub fn run(arena: Allocator, comptime T: type, settings: *const Config(T), ctx: anytype, callback: fn (@TypeOf(ctx), KeyCommand(T)) anyerror!void) !void {
-    var queue = KeyQueue(T).init(arena, settings);
+pub fn run(arena: Allocator, io: std.Io, comptime T: type, settings: *const Config(T), ctx: anytype, callback: fn (@TypeOf(ctx), KeyCommand(T)) anyerror!void) !void {
+    var queue = KeyQueue(T).init(arena, io, settings);
 
     const handle = try std.Thread.spawn(.{}, keys.handleKeys, .{ T, &queue });
     defer handle.join();
@@ -24,10 +24,12 @@ pub fn run(arena: Allocator, comptime T: type, settings: *const Config(T), ctx: 
                 if (key_cmd.trigger_per_ms == 0 or !key_cmd.retrigger) {
                     queue.clear();
                 } else {
-                    std.Thread.sleep(std.time.ns_per_ms * key_cmd.trigger_per_ms);
+                    const duration = std.Io.Duration.fromMilliseconds(@intCast(key_cmd.trigger_per_ms));
+                    io.sleep(duration, .real) catch {};
                 }
             }
         }
-        std.Thread.sleep(std.time.ns_per_ms * 3);
+        const duration = std.Io.Duration.fromMilliseconds(3);
+        io.sleep(duration, .real) catch {};
     }
 }
