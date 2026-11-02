@@ -18,7 +18,7 @@ pub fn readKeyFromInput(alloc: Allocator) ?Key {
 
     _ = try std.Thread.spawn(.{}, handleKeys, .{ T, &queue });
 
-    if (queue.take()) |press| {
+    if (try queue.take()) |press| {
         return press.key;
     }
     return null;

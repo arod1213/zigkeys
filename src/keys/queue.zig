@@ -1,5 +1,5 @@
 const std = @import("std");
-const c = @import("./coregraphics.zig").lib;
+const c = @import("CoreGraphics");
 const print = std.debug.print;
 const Allocator = std.mem.Allocator;
 
@@ -30,34 +30,36 @@ fn isRelease(curr: models.KeyPress, prev: ?models.KeyPress) bool {
 
 pub fn KeyQueue(comptime T: type) type {
     return struct {
+        io: std.Io,
         alloc: Allocator,
         settings: *const Config(T),
 
         prev: ?models.KeyPress,
         curr: ?models.KeyPress,
 
-        mu: std.Thread.Mutex,
+        mu: std.Io.Mutex,
 
         const Self = @This();
-        pub fn init(alloc: Allocator, settings: *const Config(T)) Self {
+        pub fn init(io: std.Io, alloc: Allocator, settings: *const Config(T)) Self {
             return .{
+                .io = io,
                 .alloc = alloc,
                 .settings = settings,
                 .prev = null,
                 .curr = null,
-                .mu = std.Thread.Mutex{},
+                .mu = std.Io.Mutex{ .state = .{ .raw = .unlocked } },
             };
         }
 
-        pub fn clear(self: *Self) void {
-            self.mu.lock();
-            defer self.mu.unlock();
+        pub fn clear(self: *Self) !void {
+            try self.mu.lock(self.io);
+            defer self.mu.unlock(self.io);
             self.curr = null;
         }
 
         pub fn consume(self: *Self, press: models.KeyPress) bool {
-            self.mu.lock();
-            defer self.mu.unlock();
+            self.mu.lock(self.io) catch return false;
+            defer self.mu.unlock(self.io);
 
             if (isRetrigger(press, self.prev)) {
                 logThis(self.settings.should_log, .info, "blocked retrigger of {f} because prev is {f}", .{ press.key, self.prev.?.key });
@@ -79,9 +81,9 @@ pub fn KeyQueue(comptime T: type) type {
             }
         }
 
-        pub fn take(self: *Self) ?models.KeyPress {
-            self.mu.lock();
-            defer self.mu.unlock();
+        pub fn take(self: *Self) !?models.KeyPress {
+            try self.mu.lock(self.io);
+            defer self.mu.unlock(self.io);
 
             const x = self.curr;
             if (x != null) {

@@ -1,3 +1,1 @@
-pub const lib = @cImport({
-    @cInclude("CoreGraphics/CoreGraphics.h");
-});
+pub const lib = @import("CoreGraphics");

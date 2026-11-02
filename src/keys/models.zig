@@ -145,17 +145,15 @@ pub const Key = struct {
 
 pub const KeyPress = struct {
     key: Key,
-    triggered_at: std.time.Instant,
+    triggered_at: std.Io.Timestamp,
 
     const Self = @This();
-    pub fn init(key: Key) !Self {
-        return .{
-            .key = key,
-            .triggered_at = try std.time.Instant.now(),
-        };
+    pub fn init(io: std.Io, key: Key) !Self {
+        return .{ .key = key, .triggered_at = std.Io.Timestamp.now(io, .awake) };
     }
 
     pub fn ms_diff(self: Self, other: Self) u64 {
-        return self.triggered_at.since(other.triggered_at) / 1000000;
+        const d = self.triggered_at.durationTo(other.triggered_at);
+        return @intCast(d.toMilliseconds());
     }
 };

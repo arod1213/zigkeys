@@ -5,7 +5,12 @@ const KeyPress = @import("./models.zig").KeyPress;
 
 const logThis = @import("./logger.zig").logThis;
 
-fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c.CGEventRef, ?*anyopaque) callconv(.c) c.CGEventRef {
+fn createEventCallback(comptime T: type) fn (
+    c.CGEventTapProxy,
+    c.CGEventType,
+    c.CGEventRef,
+    ?*anyopaque,
+) callconv(.c) c.CGEventRef {
     return struct {
         fn eventCallback(
             _: c.CGEventTapProxy, // proxy
@@ -13,6 +18,9 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
             event: c.CGEventRef,
             queue: ?*anyopaque,
         ) callconv(.c) c.CGEventRef {
+            var t = std.Io.Threaded.init(std.heap.page_allocator, .{});
+            const io = t.io();
+
             const queue_ptr: *KeyQueue(T) = @ptrCast(@alignCast(queue));
 
             switch (type_) {
@@ -32,7 +40,7 @@ fn createEventCallback(comptime T: type) fn (c.CGEventTapProxy, c.CGEventType, c
                     const should_log = queue_ptr.settings.should_log;
                     logThis(should_log, .info, "key {d} flag {d} is_down {any}", .{ keycode, flags orelse 256, is_down });
 
-                    const key_press = KeyPress.init(.{
+                    const key_press = KeyPress.init(io, .{
                         .val = @intCast(keycode),
                         .flags = flags,
                         .down = is_down,

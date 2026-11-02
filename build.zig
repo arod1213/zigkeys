@@ -9,6 +9,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .imports = &.{},
     });
+    const core_graphics = b.addTranslateC(.{
+        .root_source_file = b.path("src/include/coregraphics.h"),
+        .target = target,
+        .optimize = optimize,
+    });
+    keys.addImport("CoreGraphics", core_graphics.createModule());
     keys.linkFramework("CoreGraphics", .{ .needed = true });
     keys.linkFramework("CoreFoundation", .{ .needed = true });
 
@@ -40,9 +46,7 @@ pub fn build(b: *std.Build) void {
     run_step.dependOn(&run_cmd.step);
     run_cmd.step.dependOn(b.getInstallStep());
 
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
-    }
+    run_cmd.addPassthruArgs();
 
     const mod_tests = b.addTest(.{
         .root_module = mod,

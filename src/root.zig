@@ -11,23 +11,47 @@ pub const Key = keys.Key;
 pub const Modifier = keys.Modifier;
 pub const Side = keys.Side;
 
-pub fn run(arena: Allocator, comptime T: type, settings: *const Config(T), ctx: anytype, callback: fn (@TypeOf(ctx), KeyCommand(T)) anyerror!void) !void {
-    var queue = KeyQueue(T).init(arena, settings);
+pub fn run(
+    io: std.Io,
+    arena: Allocator,
+    comptime T: type,
+    settings: *const Config(T),
+    ctx: anytype,
+    callback: fn (@TypeOf(ctx), KeyCommand(T)) anyerror!void,
+) !void {
+    var queue = KeyQueue(T).init(io, arena, settings);
 
     const handle = try std.Thread.spawn(.{}, keys.handleKeys, .{ T, &queue });
     defer handle.join();
 
     while (true) {
-        if (queue.take()) |press| {
+        if (try queue.take()) |press| {
             if (settings.cmdFromKey(press)) |key_cmd| {
                 try callback(ctx, key_cmd);
                 if (key_cmd.trigger_per_ms == 0 or !key_cmd.retrigger) {
-                    queue.clear();
+                    try queue.clear();
                 } else {
-                    std.Thread.sleep(std.time.ns_per_ms * key_cmd.trigger_per_ms);
+                    const dur = std.Io.Clock.Duration{
+                        .clock = .awake,
+                        .raw = std.Io.Duration{
+                            .nanoseconds = std.time.ns_per_ms * key_cmd.trigger_per_ms,
+                        },
+                    };
+                    const timeout = std.Io.Timeout{
+                        .duration = dur,
+                    };
+                    try timeout.sleep(io);
                 }
             }
         }
-        std.Thread.sleep(std.time.ns_per_ms * 3);
+
+        const dur = std.Io.Clock.Duration{
+            .clock = .awake,
+            .raw = std.Io.Duration{ .nanoseconds = std.time.ns_per_ms * 3 },
+        };
+        const timeout = std.Io.Timeout{
+            .duration = dur,
+        };
+        try timeout.sleep(io);
     }
 }
