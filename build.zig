@@ -25,6 +25,7 @@ pub fn build(b: *std.Build) void {
             .{ .name = "keys", .module = keys },
         },
     });
+    mod.addIncludePath(b.path("include/"));
 
     const exe = b.addExecutable(.{
         .name = "zigkeys",
