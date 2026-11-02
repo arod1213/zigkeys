@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
         .imports = &.{},
     });
     const core_graphics = b.addTranslateC(.{
-        .root_source_file = b.path("src/include/coregraphics.h"),
+        .root_source_file = b.path("include/coregraphics.h"),
         .target = target,
         .optimize = optimize,
     });
